@@ -60,7 +60,7 @@ def get_config(config_string="full,multimodal"):
         eval_interval=5000,
         save_interval=5000,
         save_dir=placeholder(str),
-        seed=42,
+        seed=43,
         wandb=dict(
             project="octo_finetune", group=placeholder(str), entity=placeholder(str)
         ),
