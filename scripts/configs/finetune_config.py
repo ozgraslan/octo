@@ -53,14 +53,14 @@ def get_config(config_string="full,multimodal"):
     config = dict(
         pretrained_path=placeholder(str),
         pretrained_step=placeholder(int),
-        batch_size=32,
+        batch_size=128,
         shuffle_buffer_size=10000,
         num_steps=max_steps,
         log_interval=100,
         eval_interval=5000,
         save_interval=5000,
         save_dir=placeholder(str),
-        seed=43,
+        seed=42,
         wandb=dict(
             project="octo_finetune", group=placeholder(str), entity=placeholder(str)
         ),
@@ -87,7 +87,7 @@ def get_config(config_string="full,multimodal"):
             num_val_batches=16,
         ),
         viz_kwargs=dict(
-            eval_batch_size=16,
+            eval_batch_size=64,
             trajs_for_metrics=100,
             trajs_for_viz=8,
             samples_per_state=8,
