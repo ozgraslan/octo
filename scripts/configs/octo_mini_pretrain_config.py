@@ -106,14 +106,14 @@ def get_config(config_string=None):
 
     config = update_config(
         config,
-        num_steps=300000,
+        num_steps=3000,
         window_size=2,
         optimizer=dict(
             frozen_keys=("*hf_model*",),
         ),
         dataset_kwargs=dict(
             oxe_kwargs=dict(
-                data_mix="oxe_magic_soup",
+                data_mix="bridge",
                 data_dir="./tests/debug_dataset",
                 load_camera_views=("primary", "wrist"),
                 load_depth=False,
@@ -129,8 +129,8 @@ def get_config(config_string=None):
                     rephrase_prob=0.5,
                 ),
             ),
-            batch_size=512,
-            shuffle_buffer_size=500000,
+            batch_size=16,
+            shuffle_buffer_size=10000,
             balance_weights=True,
         ),
         text_processor=ModuleSpec.create(

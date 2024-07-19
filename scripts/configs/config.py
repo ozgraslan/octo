@@ -45,7 +45,7 @@ def get_config(
                 num_val_batches=16,
             ),
             viz_kwargs=dict(
-                eval_batch_size=128,
+                eval_batch_size=8,
                 trajs_for_metrics=100,
                 trajs_for_viz=8,
                 samples_per_state=8,
