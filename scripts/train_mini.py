@@ -237,9 +237,9 @@ def main(_):
         jax.jit,
         # state is replicated, batch is data-parallel
         in_shardings=(replicated_sharding, dp_sharding),
-        out_shardings=(replicated_sharding, replicated_sharding),
+        # out_shardings=(replicated_sharding, replicated_sharding),
         # allows jax to modify `state` in-place, saving a lot of memory
-        donate_argnums=0,
+        # donate_argnums=0, ## This sharding stuff does not work on my laptop...
     )
     def train_step(state: TrainState, batch: Data):
         rng, dropout_rng = jax.random.split(state.rng)
