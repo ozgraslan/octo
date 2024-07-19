@@ -48,7 +48,7 @@ flags.DEFINE_bool("debug", False, "Debug config (no wandb logging)")
 config_dir = os.path.join(os.path.dirname(__file__), "configs")
 config_flags.DEFINE_config_file(
     "config",
-    os.path.join(config_dir, "octo_mini_pretrain_config.py:vit_t"),
+    os.path.join(config_dir, "octo_mini_pretrain_config.py:octo_mini"),
     "File path to the training hyperparameter configuration.",
     lock_config=False,
 )

@@ -151,6 +151,10 @@ def get_config(config_string=None):
             ),
         ),
         eval_datasets=["bridge_dataset"],
+        log_interval=500,
+        eval_interval=500,
+        viz_interval=500,
+        save_interval=1000,
     )
 
     return config

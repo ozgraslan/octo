@@ -241,6 +241,7 @@ def common_transformer_sizes(transformer_size: str) -> (int, dict):
     assert transformer_size in [
         "dummy",
         "vanilla",
+        "octo_mini",
         "vit_t",
         "vit_s",
         "vit_b",
@@ -263,6 +264,12 @@ def common_transformer_sizes(transformer_size: str) -> (int, dict):
             num_layers=4,
             mlp_dim=1024,
             num_attention_heads=8,
+            dropout_rate=0.1,
+        ),
+        "octo_mini": dict(
+            num_layers=6,
+            mlp_dim=256,
+            num_attention_heads=4,
             dropout_rate=0.1,
         ),
         "vit_t": dict(
@@ -300,6 +307,7 @@ def common_transformer_sizes(transformer_size: str) -> (int, dict):
     TOKEN_DIMS = {
         "dummy": 256,
         "vanilla": 256,
+        "octo_mini": 64, # Use something that is dim / 4
         "vit_t": 192,
         "vit_s": 384,
         "vit_b": 768,
