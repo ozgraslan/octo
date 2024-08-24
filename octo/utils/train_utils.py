@@ -321,7 +321,7 @@ def create_optimizer(
     grad_accumulation_steps = kwargs.pop("grad_accumulation_steps", None)
 
     tx = optax.adamw(mu_dtype=jnp.bfloat16, **kwargs, mask=wd_mask)
-    if grad_accumulation_steps:
+    if grad_accumulation_steps and grad_accumulation_steps > 1:
         tx = optax.MultiSteps(tx, grad_accumulation_steps)
     if clip_gradient is not None:
         tx = optax.chain(

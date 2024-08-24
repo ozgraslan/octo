@@ -1,3 +1,13 @@
+import os
+import os.path as osp
+os.environ["XLA_FLAGS"] = (
+    "--xla_gpu_enable_triton_softmax_fusion=true "
+    "--xla_gpu_triton_gemm_any=true "
+    "--xla_gpu_enable_async_collectives=true "
+    "--xla_gpu_enable_latency_hiding_scheduler=true "
+    "--xla_gpu_enable_highest_priority_async_stream=true "
+)
+
 # WARNING: importing tensorflow too late can silence important logging (╯°□°)╯︵ ┻━┻
 import tensorflow as tf
 
@@ -5,8 +15,6 @@ import tensorflow as tf
 
 import datetime
 from functools import partial
-import os
-import os.path as osp
 
 from absl import app, flags, logging
 from flax.traverse_util import flatten_dict
@@ -40,6 +48,9 @@ from octo.utils.train_utils import (
 )
 from octo.utils.typing import Data
 
+import jax.profiler
+
+
 FLAGS = flags.FLAGS
 
 flags.DEFINE_string("name", "experiment", "Experiment name.")
@@ -48,7 +59,7 @@ flags.DEFINE_bool("debug", False, "Debug config (no wandb logging)")
 config_dir = os.path.join(os.path.dirname(__file__), "configs")
 config_flags.DEFINE_config_file(
     "config",
-    os.path.join(config_dir, "octo_mini_pretrain_config.py:octo_mini"),
+    os.path.join(config_dir, "octo_mini_pretrain_config.py:vit_t"),
     "File path to the training hyperparameter configuration.",
     lock_config=False,
 )
@@ -239,7 +250,7 @@ def main(_):
         in_shardings=(replicated_sharding, dp_sharding),
         # out_shardings=(replicated_sharding, replicated_sharding),
         # allows jax to modify `state` in-place, saving a lot of memory
-        # donate_argnums=0, ## This sharding stuff does not work on my laptop...
+        donate_argnums=(0, 1), ## This sharding stuff does not work on my laptop...
     )
     def train_step(state: TrainState, batch: Data):
         rng, dropout_rng = jax.random.split(state.rng)
@@ -303,11 +314,12 @@ def main(_):
     ):
         timer.tick("total")
 
-        with timer("dataset"):
-            batch = next(train_data_iter)
+        for _ in range(FLAGS.config.optimizer.grad_accumulation_steps):
+            with timer("dataset"):
+                batch = next(train_data_iter)
 
-        with timer("train"):
-            train_state, update_info = train_step(train_state, batch)
+            with timer("train"):
+                train_state, update_info = train_step(train_state, batch)
 
         if (i + 1) % FLAGS.config.save_interval == 0:
             save_callback(train_state, i + 1)
