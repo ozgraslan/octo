@@ -213,7 +213,7 @@ def main(_):
         train_state = save_callback.state_checkpointer.restore(
             save_callback.state_checkpointer.latest_step(), items=train_state
         )
-        checkpoint_step = int(train_state.step)
+        checkpoint_step = int(train_state.step) // FLAGS.config.optimizer.grad_accumulation_steps
         logging.info("Restored checkpoint from %s", save_dir)
         if FLAGS.config.start_step is not None:
             start_step = FLAGS.config.start_step  # start_step overrides checkpoint
