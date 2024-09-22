@@ -21,8 +21,10 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
 
 # Install octo/SimplerEnv python requirements
 RUN wget https://raw.githubusercontent.com/simpler-env/SimplerEnv/refs/heads/main/requirements_full_install.txt \
+    wget https://raw.githubusercontent.com/simpler-env/ManiSkill2_real2sim/cd45dd27dc6bb26d048cb6570cdab4e3f935cc37/requirements.txt \
     && pip install tensorflow==2.15.0 \
     && pip install -r requirements_full_install.txt && rm requirements_full_install.txt \
+    && pip install -r requirements.txt && rm requirements.txt \
     && pip install tensorflow[and-cuda]==2.15.1 \
     && pip install git+https://github.com/nathanrooy/simulated-annealing \
     && pip install numpy==1.24.4 \

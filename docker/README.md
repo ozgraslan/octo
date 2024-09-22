@@ -7,6 +7,7 @@ Since these containers will be used for active development, the Octo and Simpler
 Additionally, the python package `debugpy` is installed that allows vscode to connect a remote debug session inside the container.
 
 ## Examples
+
 ### Docker
 
 ```
@@ -20,6 +21,22 @@ The port forwarding will be used by the debugger.
 singularity shell --nv -B <Octo path>:/project/octo -B <SimplerEnv path>:/project/SimplerEnv <image_name>
 ```
 There is no network isolation in Singularity, so there is no need to map any port.
+
+### Note
+ After mounting the code directories, they still have to be installed via:
+```bash
+pip install -e /project/octo
+pip install -e /project/SimplerEnv/ManiSkill2_real2sim
+pip install -e /project/SimplerEnv
+``` 
+Or you can automate this by using `singularity exec` and a bash file:
+```bash
+#!/bin/bash
+pip install -e /project/octo
+pip install -e /project/SimplerEnv/ManiSkill2_real2sim
+pip install -e /project/SimplerEnv
+python /project/octo/examples/02_finetune_new_observation_action.py --pretrained_path=hf://rail-berkeley/octo-small --data_dir=/project/aloha_sim_dataset --save_dir=/project/checkpoints
+```
 
 ## Debugging
 If you are trying to debug a file, use the `debugpy` package to start a session that vscode can connect to:
