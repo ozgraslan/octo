@@ -104,7 +104,7 @@ def get_config(config_string=None):
         "wrist": wrist_augment_kwargs,
     }
 
-    grad_accumulation_steps = 2
+    grad_accumulation_steps = 1
     config = update_config(
         config,
         num_steps=300000,
@@ -139,7 +139,7 @@ def get_config(config_string=None):
                 ),
             ),
             batch_size=512 // grad_accumulation_steps,
-            shuffle_buffer_size=500000,
+            shuffle_buffer_size=int(5e5),
             balance_weights=True,
         ),
         text_processor=ModuleSpec.create(
@@ -161,9 +161,9 @@ def get_config(config_string=None):
         ),
         eval_datasets=["bridge_dataset"],
         log_interval=200,
-        eval_interval=1000,
-        viz_interval=5000,
-        save_interval=1000,
+        eval_interval=5000,
+        viz_interval=20000,
+        save_interval=10000,
     )
 
     return config
