@@ -104,12 +104,21 @@ def get_config(config_string=None):
         "wrist": wrist_augment_kwargs,
     }
 
+    grad_accumulation_steps = 1
     config = update_config(
         config,
-        num_steps=3000,
+        num_steps=300000,
         window_size=2,
         optimizer=dict(
             frozen_keys=("*hf_model*",),
+            learning_rate=dict(
+                    name="rsqrt",
+                    init_value=0.0,
+                    peak_value=3e-4,
+                    warmup_steps=2000 * grad_accumulation_steps,
+                    timescale=10000 * grad_accumulation_steps,
+                ),
+            grad_accumulation_steps=grad_accumulation_steps,
         ),
         dataset_kwargs=dict(
             oxe_kwargs=dict(
@@ -129,8 +138,8 @@ def get_config(config_string=None):
                     rephrase_prob=0.5,
                 ),
             ),
-            batch_size=16,
-            shuffle_buffer_size=10000,
+            batch_size=512 // grad_accumulation_steps,
+            shuffle_buffer_size=int(5e5),
             balance_weights=True,
         ),
         text_processor=ModuleSpec.create(
@@ -151,10 +160,10 @@ def get_config(config_string=None):
             ),
         ),
         eval_datasets=["bridge_dataset"],
-        log_interval=500,
-        eval_interval=500,
-        viz_interval=500,
-        save_interval=1000,
+        log_interval=200,
+        eval_interval=5000,
+        viz_interval=20000,
+        save_interval=10000,
     )
 
     return config

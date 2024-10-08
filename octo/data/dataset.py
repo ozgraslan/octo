@@ -577,10 +577,12 @@ def make_interleaved_dataset(
     # interleave at the frame level and then shuffle
     dataset: dl.DLataset = dl.DLataset.sample_from_datasets(
         datasets, sample_weights
-    ).shuffle(shuffle_buffer_size)
+    )
 
     # apply frame transforms
     dataset = apply_frame_transforms(dataset, **frame_transform_kwargs, train=train)
+
+    dataset = dataset.shuffle(shuffle_buffer_size)
 
     # sequential batch (parallel batch seems to use much more memory)
     if batch_size is not None:
