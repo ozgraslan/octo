@@ -4,11 +4,27 @@ import time
 from typing import Dict
 
 import numpy as np
+from scipy.spatial.transform import Rotation as R
+
 import gym
 import cv2
 
 from droid.robot_env import RobotEnv
 from droid.misc.parameters import hand_camera_id, varied_camera_1_id
+
+
+def angle_add(delta, source, degrees=False):
+    delta_rot = R.from_euler("xyz", delta, degrees=degrees)
+    source_rot = R.from_euler("xyz", source, degrees=degrees)
+    target_rot = delta_rot * source_rot 
+    return target_rot.as_euler("xyz")
+
+
+def pose_add(delta, source, degrees=False):
+    lin_sum = np.array(delta[:3]) + np.array(source[:3])
+    rot_sum = angle_add(delta[3:6], source[3:6], degrees=degrees)
+    result = np.concatenate([lin_sum, rot_sum])
+    return result
 
 class DroidEnv(gym.Env):
     def __init__(
@@ -96,6 +112,11 @@ class DroidEnv(gym.Env):
             assert (action.max() <= 1) and (action.min() >= -1)
         
         # Update Robot
+            
+        robot_state = self._env.get_state()[0]["cartesian_position"]
+        print(action.shape)
+        action[:-1] = pose_add(action[:-1], robot_state) 
+        action[-1] = 1 - action[-1]
         action_info = self._env.update_robot(
             action,
             action_space=self._env.action_space,
@@ -132,17 +153,20 @@ if __name__ == "__main__":
                          camera_kwargs=camera_kwargs)
     droid_env = DroidEnv(env=robot_env, 
                          camera_names_dict=camera_names_dict,
-                         blocking=True)
+                         blocking=False)
 
     # print(droid_env)
 
     _, info = droid_env.reset()
 
     print(info["obs_info"]["robot_state"]["gripper_position"])
+    print(info["obs_info"]["robot_state"]["cartesian_position"])
+
     robot_state = info["obs_info"]["robot_state"]
     action = robot_state["cartesian_position"] + [robot_state["gripper_position"]]
-    action[0] -= 0.06
+    action[2] -= 0.1
     action[-1] = 0.5
     obs, _, _, _, info = droid_env.step(np.array(action))
 
     print(info["obs_info"]["robot_state"]["gripper_position"])
+    print(info["obs_info"]["robot_state"]["cartesian_position"])

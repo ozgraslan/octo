@@ -33,18 +33,18 @@ logging.set_verbosity(logging.WARNING)
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_string(
-    "checkpoint_weights_path", None, "Path to checkpoint", required=True
-)
-flags.DEFINE_integer("checkpoint_step", None, "Checkpoint step", required=True)
+# flags.DEFINE_string(
+#     "checkpoint_weights_path", None, "Path to checkpoint", required=True
+# )
+# flags.DEFINE_integer("checkpoint_step", None, "Checkpoint step", required=True)
 
 # custom to droid robot
 flags.DEFINE_bool("blocking", True, "Use the blocking controller")
 
 
-flags.DEFINE_integer("im_size", 256, "Image size", required=True)
-flags.DEFINE_string("video_save_path", None, "Path to save video")
-flags.DEFINE_integer("num_timesteps", 120, "num timesteps")
+flags.DEFINE_integer("im_size", 256, "Image size")
+flags.DEFINE_string("video_save_path", "./", "Path to save video")
+flags.DEFINE_integer("num_timesteps", 15, "num timesteps")
 flags.DEFINE_integer("window_size", 2, "Observation history length")
 flags.DEFINE_integer(
     "action_horizon", 4, "Length of action sequence to execute/ensemble"
@@ -71,24 +71,20 @@ def main(_):
     
     ## image obs name to camera id mapping
     ## choose camera ids and left-right
-    camera_names_dict = {"primary": varied_camera_1_id + "_left", 
-                         "wrist": hand_camera_id + "_left"}
+    camera_names_dict = {"primary": varied_camera_1_id + "_left"}
 
     robot_env = RobotEnv(action_space="cartesian_position", 
                          camera_kwargs=camera_kwargs)
-    droid_env = DroidEnv(env=robot_env, 
-                         camera_names_dict=camera_names_dict,
-                         blocking=True)
+    env = DroidEnv(env=robot_env, 
+                   camera_names_dict=camera_names_dict,
+                   blocking=True)
     
     if not FLAGS.blocking:
         assert STEP_DURATION == 0.2, STEP_DURATION_MESSAGE
 
     # load models
-    model = OctoModel.load_pretrained(
-        FLAGS.checkpoint_weights_path,
-        FLAGS.checkpoint_step,
-    )
-
+    model = OctoModel.load_pretrained("hf://rail-berkeley/octo-base-1.5")
+    print(model.get_pretty_spec())
     # wrap the robot environment
     env = HistoryWrapper(env, FLAGS.window_size)
     env = TemporalEnsembleWrapper(env, FLAGS.action_horizon)
@@ -108,9 +104,7 @@ def main(_):
             observations,
             tasks,
             rng=rng,
-            unnormalization_statistics=pretrained_model.dataset_statistics[
-                "bridge_dataset"
-            ]["action"],
+            unnormalization_statistics=None,
         )
         # remove batch dim
         return actions[0]
@@ -119,8 +113,6 @@ def main(_):
         partial(
             sample_actions,
             model,
-            argmax=FLAGS.deterministic,
-            temperature=FLAGS.temperature,
         )
     )
 
